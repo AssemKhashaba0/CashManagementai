@@ -1,0 +1,115 @@
+﻿@model IEnumerable<CashManagement.Controllers.CashLineViewModel>
+@{
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<div class="container-fluid" dir="rtl">
+    <h2 class="text-center mb-4">الخطوط النقدية المجمدة</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-primary">العودة إلى كل الخطوط</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>رقم الهاتف</th>
+                            <th>اسم المالك</th>
+                            <th>الرقم القومي</th>
+                            <th>نوع الشبكة</th>
+                            <th>الرصيد الحالي</th>
+                            <th>الحد اليومي للسحب</th>
+                            <th>الحد اليومي للإيداع</th>
+                            <th>الحد الشهري للسحب</th>
+                            <th>الحد الشهري للإيداع</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cashLine in Model)
+                        {
+                            <tr>
+                                <td>@cashLine.PhoneNumber</td>
+                                <td>@cashLine.OwnerName</td>
+                                <td>@cashLine.NationalId</td>
+                                <td>@cashLine.NetworkType</td>
+                                <td>@cashLine.CurrentBalance.ToString("C")</td>
+                                <td>
+                                    @cashLine.DailyWithdrawLimit.ToString("C")
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @cashLine.DailyWithdrawRemainingPercentage%" aria-valuenow="@cashLine.DailyWithdrawRemainingPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @cashLine.DailyDepositLimit.ToString("C")
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @cashLine.DailyDepositRemainingPercentage%" aria-valuenow="@cashLine.DailyDepositRemainingPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @cashLine.MonthlyWithdrawLimit.ToString("C")
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @cashLine.MonthlyWithdrawRemainingPercentage%" aria-valuenow="@cashLine.MonthlyWithdrawRemainingPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @cashLine.MonthlyDepositLimit.ToString("C")
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @cashLine.MonthlyDepositRemainingPercentage%" aria-valuenow="@cashLine.MonthlyDepositRemainingPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">مجمد</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@cashLine.Id" class="btn btn-info btn-sm">التفاصيل</a>
+                                        <a asp-action="Edit" asp-route-id="@cashLine.Id" class="btn btn-primary btn-sm">تعديل</a>
+                                        <form asp-action="Unfreeze" asp-route-id="@cashLine.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm">إلغاء التجميد</button>
+                                        </form>
+                                        <form asp-action="Delete" asp-route-id="@cashLine.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا الخط؟');">حذف</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center">لا توجد خطوط نقدية مجمدة</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+}

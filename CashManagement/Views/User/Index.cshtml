@@ -1,0 +1,668 @@
+﻿@model IEnumerable<CashManagement.Controllers.UserViewModel>
+
+@{
+    ViewData["Title"] = "قائمة المستخدمين";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+
+    // Calculate user roles counts
+    var adminCount = Model.Count(u => u.Role == "Admin");
+    var employeeCount = Model.Count(u => u.Role == "Employee"); // Assuming 'Employee' is the role name
+
+    // Define controller name as a C# variable
+    var currentControllerName = "User";
+}
+
+<style>
+    /* Custom CSS for the specified color palette and enhanced design - Light Theme */
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+    @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --background-color: #FDFDFD; /* Light Ivory */
+        --primary-color: #1D4ED8;   /* Indigo Blue */
+        --text-color: #111827;      /* Soft Black */
+        --header-sidebar-bg: #F3F4F6; /* Very Light Gray - Used for card background */
+        --secondary-color: #FACC15;  /* Soft Gold (for accents/highlights) */
+        --error-color: #F87171;     /* Red for errors */
+        --success-color: #10B981;   /* Green for success */
+        --warning-color: #F59E0B;   /* Orange for warnings */
+        --info-color: #0EA5E9;      /* Light Blue for info/details */
+
+        /* Derived colors for better contrast/depth in light theme */
+        --card-background-color: var(--header-sidebar-bg); /* Use very light gray for card backgrounds */
+        --input-bg: #EBECED; /* Slightly darker light ivory for input fields (if any) */
+        --border-color: #D1D5DB; /* Light gray for subtle borders */
+        --button-text-light: #FFFFFF; /* White text for dark buttons */
+        --button-text-dark: #111827; /* Dark text for light buttons */
+        --muted-text-color: #6B7280; /* Darker gray for secondary text */
+        --shadow-light: rgba(0, 0, 0, 0.08); /* Lighter shadow for light theme */
+        --shadow-medium: rgba(0, 0, 0, 0.15); /* Medium shadow for light theme */
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: 'Cairo', sans-serif;
+        direction: rtl; /* Ensure overall RTL for Arabic content */
+        text-align: right; /* Default text alignment for Arabic */
+    }
+
+    h2 {
+        color: var(--primary-color); /* Primary color for main heading */
+        margin-bottom: 2.5rem; /* More space below heading */
+        text-align: center;
+        font-weight: 800; /* Bolder heading */
+        font-size: 2.8em; /* Larger heading */
+        text-shadow: 0 2px 5px var(--shadow-light); /* Subtle text shadow */
+    }
+
+    /* Info Cards for User Counts */
+    .info-card {
+        background-color: var(--card-background-color);
+        color: var(--text-color);
+        border-radius: 12px; /* More rounded corners */
+        padding: 25px; /* More padding */
+        margin-bottom: 20px;
+        box-shadow: 0 6px 18px var(--shadow-medium); /* Lighter, softer shadow */
+        text-align: center;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid var(--border-color); /* Subtle border */
+    }
+    .info-card:hover {
+        transform: translateY(-7px); /* More pronounced lift */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    }
+    .info-card h4 {
+        color: var(--primary-color); /* Primary color for card title */
+        margin-bottom: 15px; /* More space */
+        font-weight: 700;
+        font-size: 1.3em;
+    }
+    .info-card p {
+        font-size: 2.5em; /* Larger count number */
+        font-weight: bold;
+        color: var(--secondary-color); /* Secondary color for the count */
+        margin: 0; /* Remove default paragraph margin */
+    }
+
+    /* Main Action Button (Add New User) */
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: var(--button-text-light); /* White text */
+        transition: all 0.3s ease;
+        display: inline-flex; /* Use inline-flex for button */
+        align-items: center;
+        gap: 10px; /* More space between icon and text */
+        padding: 12px 25px; /* More padding */
+        font-size: 1.1em;
+        font-weight: 600;
+        border-radius: 8px; /* Consistent border-radius */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Lighter button shadow */
+        text-decoration: none; /* Remove underline for anchor tag */
+    }
+
+    .btn-primary-custom i {
+        font-size: 1.2em; /* Larger icon */
+        order: 1; /* Icon to the right in RTL */
+    }
+    .btn-primary-custom span { /* For text content */
+        order: 2;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #17329E; /* Darker primary on hover */
+        border-color: #17329E;
+        transform: translateY(-3px); /* More lift on hover */
+        color: var(--button-text-light); /* Ensure text remains white on hover */
+        box-shadow: 0 6px 15px rgba(29, 78, 216, 0.3); /* Stronger shadow on hover */
+    }
+
+    /* Alert Styling */
+    .alert-success {
+        background-color: var(--success-color); /* Green for success */
+        color: var(--button-text-light); /* White text on green */
+        border-color: var(--success-color);
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 15px 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .alert-danger {
+        background-color: var(--error-color); /* Red for error */
+        color: var(--button-text-light); /* White text on red */
+        border-color: var(--error-color);
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 15px 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .alert .btn-close {
+        filter: invert(1); /* Ensure close button is visible on colored alerts */
+    }
+
+
+    /* User Card Styling */
+    .user-card {
+        background-color: var(--card-background-color);
+        border-radius: 12px; /* More rounded corners */
+        padding: 30px; /* More padding */
+        margin-bottom: 25px;
+        box-shadow: 0 6px 18px var(--shadow-medium); /* Softer shadow */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        border: 1px solid var(--border-color); /* Subtle border */
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .user-card h5 {
+        color: var(--primary-color); /* Primary color for user name */
+        font-weight: 700;
+        font-size: 1.4em; /* Larger name */
+        margin-bottom: 15px; /* More space below name */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .user-card h5 i {
+        color: var(--secondary-color); /* Secondary color for user icon */
+        font-size: 1.3em;
+    }
+
+    .user-card p {
+        color: var(--muted-text-color); /* Muted text for details */
+        margin-bottom: 10px; /* More space between details */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95em;
+    }
+    .user-card p i {
+        color: var(--primary-color); /* Primary color for detail icons */
+        font-size: 1.1em;
+    }
+
+    .user-card .card-body {
+        flex-grow: 1;
+    }
+
+    .user-card .card-footer {
+        background-color: transparent;
+        border-top: 1px solid var(--border-color); /* Use border-color */
+        padding-top: 20px; /* More padding */
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px; /* More space between buttons */
+        justify-content: center;
+    }
+
+    /* Icon Buttons */
+    .btn-icon {
+        background-color: var(--primary-color); /* Default primary button color */
+        border-color: var(--primary-color);
+        color: var(--button-text-light);
+        width: 45px; /* Slightly larger fixed width */
+        height: 45px; /* Slightly larger fixed height */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 1.2em; /* Larger icon size */
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Lighter shadow */
+        text-decoration: none; /* Remove underline */
+    }
+    .btn-icon:hover {
+        transform: scale(1.15); /* More pronounced scale */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* Stronger shadow on hover */
+        color: var(--button-text-light); /* Ensure text remains white */
+    }
+
+    .btn-details {
+        background-color: var(--info-color); /* Light Blue for details */
+        border-color: var(--info-color);
+    }
+    .btn-details:hover {
+        background-color: #0c82bb; /* Darker blue on hover */
+        border-color: #0c82bb;
+    }
+
+    .btn-edit {
+        background-color: var(--warning-color); /* Orange for edit */
+        border-color: var(--warning-color);
+    }
+    .btn-edit:hover {
+        background-color: #E68A00; /* Darker orange on hover */
+        border-color: #E68A00;
+    }
+
+    .btn-freeze {
+        background-color: var(--error-color); /* Red for freeze */
+        border-color: var(--error-color);
+    }
+    .btn-freeze:hover {
+        background-color: #E55C5C; /* Darker red on hover */
+        border-color: #E55C5C;
+    }
+
+    .btn-unfreeze {
+        background-color: var(--success-color); /* Green for unfreeze */
+        border-color: var(--success-color);
+    }
+    .btn-unfreeze:hover {
+        background-color: #0E9F71; /* Darker green on hover */
+        border-color: #0E9F71;
+    }
+
+    .btn-delete {
+        background-color: #DC3545; /* Bootstrap default red for delete */
+        border-color: #DC3545;
+    }
+    .btn-delete:hover {
+        background-color: #C82333;
+        border-color: #C82333;
+    }
+
+
+    /* Role Badges */
+    .badge {
+        display: inline-flex; /* Use flexbox for badges */
+        align-items: center;
+        padding: 6px 12px; /* More padding */
+        border-radius: 6px; /* Slightly more rounded */
+        font-size: 0.88em; /* Slightly larger font */
+        font-weight: 600;
+        margin-right: 5px; /* Space between icon and text */
+    }
+
+    .badge-admin {
+        background-color: var(--primary-color);
+        color: var(--button-text-light);
+    }
+
+    .badge-employee {
+        background-color: var(--info-color); /* Use info color for employee badge */
+        color: var(--button-text-light);
+    }
+
+    .badge-status-active {
+        background-color: var(--success-color);
+        color: var(--button-text-light);
+    }
+
+    .badge-status-frozen {
+        background-color: var(--error-color);
+        color: var(--button-text-light);
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background-color: var(--card-background-color);
+        color: var(--text-color);
+        border-radius: 12px; /* Consistent rounded corners */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25); /* Stronger shadow for modal */
+        border: 1px solid var(--border-color);
+    }
+    .modal-header {
+        border-bottom: 1px solid var(--border-color); /* Use border-color */
+        padding: 20px 25px; /* More padding */
+    }
+    .modal-title {
+        color: var(--primary-color); /* Primary color for modal title */
+        font-weight: 700;
+        font-size: 1.5em;
+    }
+    .modal-body {
+        padding: 25px; /* More padding */
+        color: var(--text-color);
+        font-size: 1.05em;
+    }
+    .modal-body strong {
+        color: var(--primary-color); /* Highlight user name in modal */
+    }
+    .modal-footer {
+        border-top: 1px solid var(--border-color); /* Use border-color */
+        padding: 20px 25px; /* More padding */
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+        gap: 10px;
+    }
+    .modal-footer .btn {
+        padding: 10px 22px; /* Adjust button padding */
+        font-size: 0.95em;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .btn-secondary {
+        background-color: var(--muted-text-color); /* Muted gray for secondary */
+        border-color: var(--muted-text-color);
+        color: var(--button-text-light); /* White text */
+    }
+    .btn-secondary:hover {
+        background-color: #5A606B; /* Darker muted text on hover */
+        border-color: #5A606B;
+        color: var(--button-text-light);
+    }
+    /* Modal confirm button (primary color) */
+    .modal-footer .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: var(--button-text-light);
+    }
+    .modal-footer .btn-primary:hover {
+        background-color: #17329E;
+        border-color: #17329E;
+        color: var(--button-text-light);
+    }
+    .modal-footer .btn-danger { /* For delete action in modal */
+        background-color: var(--error-color);
+        border-color: var(--error-color);
+        color: var(--button-text-light);
+    }
+    .modal-footer .btn-success { /* For unfreeze action in modal */
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+        color: var(--button-text-light);
+    }
+
+
+    /* Responsive Adjustments */
+    @@media (max-width: 992px) { /* Adjust for medium screens */
+        .user-card {
+            padding: 25px;
+        }
+        .user-card h5 {
+            font-size: 1.3em;
+        }
+        .user-card p {
+            font-size: 0.9em;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        h2 {
+            font-size: 2.2em;
+            margin-bottom: 2rem;
+        }
+        .info-card {
+            padding: 20px;
+        }
+        .info-card h4 {
+            font-size: 1.1em;
+        }
+        .info-card p {
+            font-size: 2em;
+        }
+        .user-card .card-footer {
+            flex-direction: row; /* Keep buttons in a row if space allows */
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.1em;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        h2 {
+            font-size: 1.8em;
+        }
+        .info-card {
+            padding: 15px;
+        }
+        .info-card p {
+            font-size: 1.6em;
+        }
+        .d-flex.justify-content-end.mb-4 { /* Adjust "Add new user" button alignment */
+            justify-content: center !important;
+        }
+        .btn-primary-custom {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+        .user-card {
+            padding: 20px;
+        }
+        .user-card .card-footer {
+            flex-direction: column; /* Stack buttons on very small screens */
+            gap: 10px;
+        }
+        .btn-icon {
+            width: 100%; /* Make icon buttons full width on very small screens */
+            border-radius: 8px; /* Make them rectangular */
+            height: auto;
+            padding: 10px 0; /* Add vertical padding */
+        }
+    }
+</style>
+
+<div class="d-flex justify-content-center align-items-center mb-4 flex-wrap">
+    <h2 class="w-100">قائمة المستخدمين</h2>
+    <div class="row w-100 justify-content-center mb-4 g-4"> @* Increased gap for better spacing *@
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="info-card">
+                <h4>عدد المدراء (Admin)</h4>
+                <p>@adminCount</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="info-card">
+                <h4>عدد الموظفين (Employee)</h4>
+                <p>@employeeCount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mb-4"> @* Ensure this is always RTL aligned *@
+    <a asp-action="Create" class="btn btn-primary-custom">
+        <i class="fas fa-user-plus"></i>
+        <span>إضافة مستخدم جديد</span> @* Wrap text in span for ordering *@
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> @* Increased gap for user cards *@
+    @foreach (var user in Model)
+    {
+        <div class="col">
+            <div class="user-card">
+                <div class="card-body">
+                    <h5><i class="fas fa-user"></i> @user.FullName</h5>
+                    <p><i class="fas fa-envelope"></i> @user.Email</p>
+                    <p><i class="fas fa-user-tag"></i> @user.UserName</p>
+                    <p>
+                        <i class="fas fa-id-badge"></i> الدور:
+                        <span class="badge @(user.Role == "Admin" ? "badge-admin" : "badge-employee")">
+                            @user.Role
+                        </span>
+                    </p>
+                    <p>
+                        <i class="fas fa-toggle-on"></i> الحالة:
+                        <span class="badge @(user.IsActive ? "badge-status-active" : "badge-status-frozen")">
+                            @(user.IsActive ? "نشط" : "مجمد")
+                        </span>
+                    </p>
+                    <p><i class="fas fa-calendar-alt"></i> تاريخ الإنشاء: @user.CreatedAt.ToString("dd/MM/yyyy")</p>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Show" asp-route-id="@user.Id" class="btn btn-icon btn-details" title="تفاصيل">
+                        <i class="fas fa-info"></i>
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-icon btn-edit" title="تعديل">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    @if (user.IsActive)
+                    {
+                        <button type="button" class="btn btn-icon btn-freeze" title="تجميد" data-bs-toggle="modal" data-bs-target="#confirmActionModal"
+                                data-user-id="@user.Id" data-action-type="freeze" data-user-name="@user.FullName">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-icon btn-unfreeze" title="إلغاء التجميد" data-bs-toggle="modal" data-bs-target="#confirmActionModal"
+                                data-user-id="@user.Id" data-action-type="unfreeze" data-user-name="@user.FullName">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    }
+                    <button type="button" class="btn btn-icon btn-delete" title="حذف" data-bs-toggle="modal" data-bs-target="#confirmActionModal"
+                            data-user-id="@user.Id" data-action-type="delete" data-user-name="@user.FullName">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="confirmActionModal" tabindex="-1" aria-labelledby="confirmActionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmActionModalLabel">تأكيد الإجراء</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalActionMessage"></p>
+                <input type="hidden" name="id" id="modalUserId" />
+                @Html.AntiForgeryToken()
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmActionButton">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var confirmActionModalElement = document.getElementById('confirmActionModal');
+            var confirmActionButton = document.getElementById('confirmActionButton');
+
+            // Initialize Bootstrap Modal
+            var confirmActionModal = new bootstrap.Modal(confirmActionModalElement);
+
+            // Store the current action URL and HTTP method
+            let currentActionUrl = '';
+            let currentHttpMethod = 'POST'; // Default to POST for form submissions
+
+            confirmActionModalElement.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Button that triggered the modal
+                var userId = button.getAttribute('data-user-id');
+                var actionType = button.getAttribute('data-action-type');
+                var userName = button.getAttribute('data-user-name');
+
+                var modalTitle = confirmActionModalElement.querySelector('.modal-title');
+                var modalActionMessage = confirmActionModalElement.querySelector('#modalActionMessage');
+                var modalUserIdInput = confirmActionModalElement.querySelector('#modalUserId');
+
+                modalUserIdInput.value = userId;
+
+                let actionText = '';
+                let confirmButtonClass = 'btn-primary'; // Default class for confirm button
+                let modalSpecificTitle = 'تأكيد الإجراء'; // Default modal title
+
+                switch (actionType) {
+                    case 'freeze':
+                        actionText = `هل أنت متأكد من تجميد حساب المستخدم <strong>${userName}</strong>؟`;
+                        currentActionUrl = `@Url.Action("Freeze", currentControllerName)`;
+                        currentHttpMethod = 'POST';
+                        confirmButtonClass = 'btn-danger';
+                        modalSpecificTitle = 'تأكيد التجميد';
+                        break;
+                    case 'unfreeze':
+                        actionText = `هل أنت متأكد من إلغاء تجميد حساب المستخدم <strong>${userName}</strong>؟`;
+                        currentActionUrl = `@Url.Action("Unfreeze", currentControllerName)`;
+                        currentHttpMethod = 'POST';
+                        confirmButtonClass = 'btn-success';
+                        modalSpecificTitle = 'تأكيد إلغاء التجميد';
+                        break;
+                    case 'delete':
+                        actionText = `هل أنت متأكد من حذف حساب المستخدم <strong>${userName}</strong> بشكل نهائي؟ هذا الإجراء لا يمكن التراجع عنه.`;
+                        currentActionUrl = `@Url.Action("Delete", currentControllerName)`;
+                        currentHttpMethod = 'POST';
+                        confirmButtonClass = 'btn-danger';
+                        modalSpecificTitle = 'تأكيد الحذف';
+                        break;
+                    default:
+                        actionText = 'هل أنت متأكد من هذا الإجراء؟';
+                        currentActionUrl = ''; // No action defined by default
+                        currentHttpMethod = 'POST';
+                        confirmButtonClass = 'btn-primary';
+                        break;
+                }
+
+                modalTitle.textContent = modalSpecificTitle;
+                modalActionMessage.innerHTML = actionText;
+
+                // Update confirm button style
+                confirmActionButton.className = `btn ${confirmButtonClass}`; // Reset classes and apply new one
+                confirmActionButton.textContent = 'تأكيد'; // Ensure text is reset
+            });
+
+            // Handle the click on the confirm button
+            confirmActionButton.addEventListener('click', function () {
+                if (currentActionUrl) {
+                    // Create a hidden form dynamically to submit the POST request
+                    const form = document.createElement('form');
+                    form.method = currentHttpMethod;
+                    form.action = currentActionUrl;
+                    form.style.display = 'none'; // Hide the form
+
+                    // Add UserId input
+                    const userIdInput = document.createElement('input');
+                    userIdInput.type = 'hidden';
+                    userIdInput.name = 'id';
+                    userIdInput.value = document.getElementById('modalUserId').value;
+                    form.appendChild(userIdInput);
+
+                    // Add Anti-forgery token
+                    const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (antiForgeryToken) {
+                        const tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = '__RequestVerificationToken';
+                        tokenInput.value = antiForgeryToken.value;
+                        form.appendChild(tokenInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit(); // Submit the form
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,97 @@
+@model CashManagement.Models.OtherProfit
+@{
+    ViewData["Title"] = "إضافة ربح آخر";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-coins"></i> إضافة ربح آخر</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="form-group mb-3">
+                            <label asp-for="Amount" class="form-label">المبلغ</label>
+                            <input asp-for="Amount" class="form-control" type="number" step="0.01" min="0" placeholder="أدخل مبلغ الربح" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label">وصف الربح</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="اكتب وصف للربح"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="DepositType" class="form-label">نوع الإيداع</label>
+                            <select asp-for="DepositType" class="form-control" id="depositTypeSelect">
+                                <option value="">اختر نوع الإيداع</option>
+                                <option value="@((int)OtherProfitDepositType.PhysicalCash)">نقدي في الدرج</option>
+                                <option value="@((int)OtherProfitDepositType.InstaPay)">InstaPay</option>
+                                <option value="@((int)OtherProfitDepositType.CashLine)">خط نقدي</option>
+                            </select>
+                            <span asp-validation-for="DepositType" class="text-danger"></span>
+                        </div>
+
+                        <!-- اختيار الخط النقدي -->
+                        <div class="form-group mb-3" id="cashLineSelection" style="display: none;">
+                            <label class="form-label">اختر الخط النقدي</label>
+                            <select name="selectedCashLineId" class="form-control">
+                                <option value="">اختر الخط النقدي</option>
+                                @foreach (var cashLine in ViewBag.ActiveCashLines)
+                                {
+                                    <option value="@cashLine.Id">@cashLine.PhoneNumber</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- اختيار حساب InstaPay -->
+                        <div class="form-group mb-3" id="instaPaySelection" style="display: none;">
+                            <label class="form-label">اختر حساب InstaPay</label>
+                            <select name="selectedInstaPayId" class="form-control">
+                                <option value="">اختر حساب InstaPay</option>
+                                @foreach (var instaPay in ViewBag.ActiveInstaPayAccounts)
+                                {
+                                    <option value="@instaPay.Id">@instaPay.PhoneNumber</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ الربح
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('depositTypeSelect').addEventListener('change', function() {
+        var selectedValue = this.value;
+        var cashLineDiv = document.getElementById('cashLineSelection');
+        var instaPayDiv = document.getElementById('instaPaySelection');
+        
+        // إخفاء جميع الخيارات
+        cashLineDiv.style.display = 'none';
+        instaPayDiv.style.display = 'none';
+        
+        // إظهار الخيار المناسب
+        if (selectedValue == '@((int)OtherProfitDepositType.CashLine)') {
+            cashLineDiv.style.display = 'block';
+        } else if (selectedValue == '@((int)OtherProfitDepositType.InstaPay)') {
+            instaPayDiv.style.display = 'block';
+        }
+    });
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

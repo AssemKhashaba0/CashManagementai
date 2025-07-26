@@ -1,0 +1,334 @@
+@model CashManagement.Controllers.OtherProfitsIndexViewModel
+@{
+    ViewData["Title"] = "الأرباح الأخرى";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<style>
+    .profits-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    .main-title {
+        color: #2c3e50;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: 1px solid #e3e6f0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #667eea;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .card-amount {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .profits-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: 1px solid #e3e6f0;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .add-btn {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .add-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .custom-table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .custom-table th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        padding: 15px 20px;
+        border: none;
+        text-align: right;
+    }
+
+    .custom-table td {
+        padding: 15px 20px;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .custom-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .deposit-type-badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .deposit-type-physical {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #155724;
+    }
+
+    .deposit-type-instapay {
+        background: linear-gradient(135deg, #cce5ff, #b3d9ff);
+        color: #004085;
+    }
+
+    .deposit-type-cashline {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        color: #856404;
+    }
+
+    .amount-display {
+        font-weight: 700;
+        color: #28a745;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-sm-custom {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        border-radius: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-info-custom {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        border: none;
+    }
+
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border: none;
+    }
+
+    .btn-sm-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 50px;
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="profits-container">
+    <div class="container">
+        <h1 class="main-title">
+            <i class="fas fa-coins"></i> الأرباح الأخرى
+        </h1>
+
+        <!-- بطاقات الملخص -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <i class="fas fa-calendar-day card-icon"></i>
+                <h5 class="card-title">أرباح اليوم</h5>
+                <p class="card-amount">@Model.TodayTotal.ToString("N2") جنيه مصري</p>
+            </div>
+            
+            <div class="summary-card">
+                <i class="fas fa-calendar-alt card-icon"></i>
+                <h5 class="card-title">أرباح الشهر</h5>
+                <p class="card-amount">@Model.MonthlyTotal.ToString("N2") جنيه مصري</p>
+            </div>
+            
+            <div class="summary-card">
+                <i class="fas fa-calendar card-icon"></i>
+                <h5 class="card-title">أرباح السنة</h5>
+                <p class="card-amount">@Model.YearlyTotal.ToString("N2") جنيه مصري</p>
+            </div>
+            
+            <div class="summary-card">
+                <i class="fas fa-chart-bar card-icon"></i>
+                <h5 class="card-title">إجمالي العمليات</h5>
+                <p class="card-amount">@Model.TotalCount عملية</p>
+            </div>
+        </div>
+
+        <!-- بطاقات التوزيع -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <i class="fas fa-money-bill-wave card-icon" style="color: #28a745;"></i>
+                <h5 class="card-title">النقد الفعلي</h5>
+                <p class="card-amount">@Model.PhysicalCashTotal.ToString("N2") جنيه مصري</p>
+            </div>
+            
+            <div class="summary-card">
+                <i class="fab fa-paypal card-icon" style="color: #007bff;"></i>
+                <h5 class="card-title">InstaPay</h5>
+                <p class="card-amount">@Model.InstaPayTotal.ToString("N2") جنيه مصري</p>
+            </div>
+            
+            <div class="summary-card">
+                <i class="fas fa-credit-card card-icon" style="color: #ffc107;"></i>
+                <h5 class="card-title">الخطوط النقدية</h5>
+                <p class="card-amount">@Model.CashLineTotal.ToString("N2") جنيه مصري</p>
+            </div>
+        </div>
+
+        <!-- جدول الأرباح -->
+        <div class="profits-table">
+            <div class="table-header">
+                <h4 class="table-title">
+                    <i class="fas fa-list me-2"></i>
+                    قائمة الأرباح الأخرى
+                </h4>
+                <a asp-action="Create" class="add-btn">
+                    <i class="fas fa-plus me-2"></i>إضافة ربح جديد
+                </a>
+            </div>
+
+            @if (Model.OtherProfits.Any())
+            {
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>المبلغ</th>
+                            <th>الوصف</th>
+                            <th>نوع الإيداع</th>
+                            <th>المستخدم</th>
+                            <th>التاريخ</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var profit in Model.OtherProfits)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="amount-display">@profit.Amount.ToString("N2") جنيه مصري</span>
+                                </td>
+                                <td>@profit.Description</td>
+                                <td>
+                                    <span class="deposit-type-badge @(profit.DepositType == OtherProfitDepositType.PhysicalCash ? "deposit-type-physical" : 
+                                                                     profit.DepositType == OtherProfitDepositType.InstaPay ? "deposit-type-instapay" : "deposit-type-cashline")">
+                                        @(profit.DepositType == OtherProfitDepositType.PhysicalCash ? "نقدي في الدرج" :
+                                          profit.DepositType == OtherProfitDepositType.InstaPay ? "InstaPay" : "خط نقدي")
+                                    </span>
+                                </td>
+                                <td>@profit.User?.UserName</td>
+                                <td>@profit.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-action="Details" asp-route-id="@profit.Id" class="btn-sm-custom btn-info-custom">
+                                            <i class="fas fa-eye"></i> تفاصيل
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@profit.Id" class="btn-sm-custom btn-danger-custom" 
+                                           onclick="return confirm('هل أنت متأكد من حذف هذا الربح؟')">
+                                            <i class="fas fa-trash"></i> حذف
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="no-data">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>لا توجد أرباح أخرى مسجلة حتى الآن</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>إضافة أول ربح
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

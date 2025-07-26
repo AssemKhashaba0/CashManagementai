@@ -1,0 +1,156 @@
+@using CashManagement.ViewModels
+@model FawryTransactionViewModel
+@{
+    ViewData["Title"] = "عملية فوري مشتريات جديدة";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-shopping-cart"></i> عملية فوري مشتريات جديدة</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreatePurchases" method="post">
+                        <!-- نوع العملية -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">نوع العملية</label>
+                            <div class="transaction-type-selector">
+                                <div class="type-option">
+                                    <input type="radio" asp-for="TransactionType" value="1" id="withdraw" />
+                                    <label for="withdraw" class="type-withdraw">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>سحب</span>
+                                    </label>
+                                </div>
+                                <div class="type-option">
+                                    <input type="radio" asp-for="TransactionType" value="0" id="deposit" />
+                                    <label for="deposit" class="type-deposit">
+                                        <i class="fas fa-arrow-down"></i>
+                                        <span>إيداع</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <span asp-validation-for="TransactionType" class="text-danger"></span>
+                        </div>
+
+                        <!-- نوع الخدمة -->
+                        <input type="hidden" asp-for="ServiceId" value="2" />
+
+                        <!-- المبلغ -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">المبلغ</label>
+                            <div class="amount-input-group">
+                                <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="أدخل المبلغ" />
+                                <span class="currency-symbol">ج.م</span>
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <!-- مبلغ الرسوم -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">مبلغ الرسوم</label>
+                            <div class="amount-input-group">
+                                <input asp-for="ManualFees" type="number" step="0.01" min="0" class="form-control" placeholder="أدخل مبلغ الرسوم" />
+                                <span class="currency-symbol">ج.م</span>
+                            </div>
+                            <span asp-validation-for="ManualFees" class="text-danger"></span>
+                        </div>
+
+                        <!-- الوصف -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">الوصف (اختياري)</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="أدخل وصف العملية"></textarea>
+                        </div>
+
+                        <!-- عرض حساب الأرباح -->
+                        <div class="fees-display" id="feesDisplay">
+                            <div class="fees-row">
+                                <span>المبلغ الأساسي:</span>
+                                <span id="baseAmount">0.00 ج.م</span>
+                            </div>
+                            <div class="fees-row">
+                                <span>الرسوم:</span>
+                                <span id="feesAmount">0.00 ج.م</span>
+                            </div>
+                            <div class="fees-row total">
+                                <span>المبلغ النهائي:</span>
+                                <span id="totalAmount">0.00 ج.م</span>
+                            </div>
+                        </div>
+
+                        <div class="profit-highlight" id="profitDisplay" style="display: none;">
+                            <i class="fas fa-coins"></i>
+                            الربح من هذه العملية: <span id="profitAmount">0.00 ج.م</span>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> تنفيذ العملية
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountInput = document.querySelector('input[name="Amount"]');
+            const feesInput = document.querySelector('input[name="ManualFees"]');
+            const transactionTypeInputs = document.querySelectorAll('input[name="TransactionType"]');
+            const feesDisplay = document.getElementById('feesDisplay');
+            const profitDisplay = document.getElementById('profitDisplay');
+
+            function updateCalculations() {
+                const amount = parseFloat(amountInput.value) || 0;
+                const fees = parseFloat(feesInput.value) || 0;
+                const transactionType = document.querySelector('input[name="TransactionType"]:checked')?.value;
+
+                if (amount > 0 && fees >= 0) {
+                    feesDisplay.style.display = 'block';
+                    
+                    document.getElementById('baseAmount').textContent = amount.toFixed(2) + ' ج.م';
+                    document.getElementById('feesAmount').textContent = fees.toFixed(2) + ' ج.م';
+                    
+                    let totalAmount = 0;
+                    if (transactionType === '1') { // سحب
+                        totalAmount = amount + fees;
+                    } else { // إيداع
+                        totalAmount = amount - fees;
+                    }
+                    
+                    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2) + ' ج.م';
+                    
+                    // عرض الربح
+                    if (fees > 0) {
+                        profitDisplay.style.display = 'block';
+                        document.getElementById('profitAmount').textContent = fees.toFixed(2) + ' ج.م';
+                    } else {
+                        profitDisplay.style.display = 'none';
+                    }
+                } else {
+                    feesDisplay.style.display = 'none';
+                    profitDisplay.style.display = 'none';
+                }
+            }
+
+            // ربط الأحداث
+            amountInput.addEventListener('input', updateCalculations);
+            feesInput.addEventListener('input', updateCalculations);
+            transactionTypeInputs.forEach(input => {
+                input.addEventListener('change', updateCalculations);
+            });
+        });
+    </script>
+}
+
+
+

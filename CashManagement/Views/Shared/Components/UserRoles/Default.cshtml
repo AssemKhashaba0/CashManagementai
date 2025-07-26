@@ -1,0 +1,9 @@
+@model IList<string>
+
+@if (Model != null && Model.Any())
+{
+    <li class="nav-header text-uppercase text-muted font-weight-bold mt-2 mb-2">
+        <i class="fas fa-user-tag"></i>
+        الأدوار: @string.Join(", ", Model)
+    </li>
+}

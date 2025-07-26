@@ -1,0 +1,485 @@
+﻿@model CashManagement.Controllers.InventoryViewModel
+
+@{
+    ViewData["Title"] = "تقرير الجرد";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #1D4ED8;
+        --success-color: #10B981;
+        --danger-color: #EF4444;
+        --warning-color: #F59E0B;
+        --info-color: #3B82F6;
+        --bg-color: #F8FAFC;
+        --card-bg: #FFFFFF;
+        --text-color: #1F2937;
+        --border-color: #E5E7EB;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: var(--bg-color);
+        font-family: 'Cairo', 'Segoe UI', sans-serif;
+        direction: rtl;
+    }
+
+    .inventory-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6B7280;
+        font-size: 1.1rem;
+    }
+
+    /* بطاقات الملخص */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .summary-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .instapay-icon { background: linear-gradient(135deg, #8B5CF6, #A855F7); }
+    .cashline-icon { background: linear-gradient(135deg, #10B981, #059669); }
+    .physical-icon { background: linear-gradient(135deg, #EF4444, #DC2626); }
+    .supplier-icon { background: linear-gradient(135deg, #F59E0B, #D97706); }
+
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .balance-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .positive { color: var(--success-color); }
+    .negative { color: var(--danger-color); }
+    .neutral { color: var(--text-color); }
+
+    .card-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .detail-item {
+        text-align: center;
+    }
+
+    .detail-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    /* جدول التفاصيل */
+    .details-section {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .details-table th,
+    .details-table td {
+        padding: 1rem;
+        text-align: right;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .details-table th {
+        background-color: #F9FAFB;
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .details-table tr:hover {
+        background-color: #F9FAFB;
+    }
+
+    /* الإجماليات */
+    .totals-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .total-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .total-label {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    /* استجابة */
+    @@media (max-width: 768px) {
+        .inventory-container {
+            padding: 1rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .summary-card {
+            padding: 1.5rem;
+        }
+
+        .balance-amount {
+            font-size: 1.5rem;
+        }
+
+        .card-details {
+            grid-template-columns: 1fr;
+        }
+
+        .details-table {
+            font-size: 0.875rem;
+        }
+
+        .details-table th,
+        .details-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="inventory-container">
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-chart-pie"></i>
+            تقرير الجرد المالي
+        </h1>
+        <p class="page-subtitle">نظرة شاملة على الأرصدة والمعاملات المالية</p>
+    </div>
+
+    <!-- بطاقات الملخص -->
+    <div class="summary-grid">
+        <!-- InstaPay -->
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-icon instapay-icon">
+                    <i class="fab fa-paypal"></i>
+                </div>
+                <div class="card-title">InstaPay</div>
+            </div>
+            <div class="balance-amount @(Model.InstaPaySummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                @Model.InstaPaySummary.CurrentBalance.ToString("N2") ج.م
+            </div>
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">إيداعات</div>
+                    <div class="detail-value positive">@Model.InstaPaySummary.TotalDeposits.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">سحوبات</div>
+                    <div class="detail-value negative">@Model.InstaPaySummary.TotalWithdrawals.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">رسوم</div>
+                    <div class="detail-value neutral">@Model.InstaPaySummary.TotalFees.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">معاملات</div>
+                    <div class="detail-value neutral">@Model.InstaPaySummary.TotalTransactions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CashLines -->
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-icon cashline-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="card-title">CashLines</div>
+            </div>
+            <div class="balance-amount @(Model.CashLineSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                @Model.CashLineSummary.CurrentBalance.ToString("N2") ج.م
+            </div>
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">إيداعات</div>
+                    <div class="detail-value positive">@Model.CashLineSummary.TotalDeposits.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">سحوبات</div>
+                    <div class="detail-value negative">@Model.CashLineSummary.TotalWithdrawals.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">رسوم</div>
+                    <div class="detail-value neutral">@Model.CashLineSummary.TotalFees.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">معاملات</div>
+                    <div class="detail-value neutral">@Model.CashLineSummary.TotalTransactions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- النقد الفعلي -->
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-icon physical-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="card-title">النقد الفعلي</div>
+            </div>
+            <div class="balance-amount @(Model.PhysicalCashSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                @Model.PhysicalCashSummary.CurrentBalance.ToString("N2") ج.م
+            </div>
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">إيداعات</div>
+                    <div class="detail-value positive">@Model.PhysicalCashSummary.TotalDeposits.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">مصروفات</div>
+                    <div class="detail-value negative">@Model.PhysicalCashSummary.TotalWithdrawals.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">معاملات</div>
+                    <div class="detail-value neutral" colspan="2">@Model.PhysicalCashSummary.TotalTransactions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الموردون -->
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-icon supplier-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="card-title">الموردون</div>
+            </div>
+            <div class="balance-amount @(Model.SupplierSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                @Model.SupplierSummary.CurrentBalance.ToString("N2") ج.م
+            </div>
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">لهم</div>
+                    <div class="detail-value positive">@Model.SupplierSummary.AmountOwedToCompany.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">عليهم</div>
+                    <div class="detail-value negative">@Model.SupplierSummary.AmountOwedByCompany.ToString("N2")</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">معاملات</div>
+                    <div class="detail-value neutral" colspan="2">@Model.SupplierSummary.TotalTransactions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول التفاصيل -->
+    <div class="details-section">
+        <h2 class="section-title">
+            <i class="fas fa-table"></i>
+            تفاصيل الأرصدة
+        </h2>
+        <table class="details-table">
+            <thead>
+                <tr>
+                    <th>النوع</th>
+                    <th>الرصيد الحالي</th>
+                    <th>إجمالي الإيداعات</th>
+                    <th>إجمالي السحوبات</th>
+                    <th>الرسوم</th>
+                    <th>عدد المعاملات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><i class="fab fa-paypal" style="color: #8B5CF6;"></i> InstaPay</td>
+                    <td class="@(Model.InstaPaySummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                        @Model.InstaPaySummary.CurrentBalance.ToString("N2") ج.م
+                    </td>
+                    <td class="positive">@Model.InstaPaySummary.TotalDeposits.ToString("N2") ج.م</td>
+                    <td class="negative">@Model.InstaPaySummary.TotalWithdrawals.ToString("N2") ج.م</td>
+                    <td>@Model.InstaPaySummary.TotalFees.ToString("N2") ج.م</td>
+                    <td>@Model.InstaPaySummary.TotalTransactions</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-credit-card" style="color: #10B981;"></i> CashLines</td>
+                    <td class="@(Model.CashLineSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                        @Model.CashLineSummary.CurrentBalance.ToString("N2") ج.م
+                    </td>
+                    <td class="positive">@Model.CashLineSummary.TotalDeposits.ToString("N2") ج.م</td>
+                    <td class="negative">@Model.CashLineSummary.TotalWithdrawals.ToString("N2") ج.م</td>
+                    <td>@Model.CashLineSummary.TotalFees.ToString("N2") ج.م</td>
+                    <td>@Model.CashLineSummary.TotalTransactions</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-money-bill-wave" style="color: #EF4444;"></i> النقد الفعلي</td>
+                    <td class="@(Model.PhysicalCashSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                        @Model.PhysicalCashSummary.CurrentBalance.ToString("N2") ج.م
+                    </td>
+                    <td class="positive">@Model.PhysicalCashSummary.TotalDeposits.ToString("N2") ج.م</td>
+                    <td class="negative">@Model.PhysicalCashSummary.TotalWithdrawals.ToString("N2") ج.م</td>
+                    <td>-</td>
+                    <td>@Model.PhysicalCashSummary.TotalTransactions</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-truck" style="color: #F59E0B;"></i> الموردون</td>
+                    <td class="@(Model.SupplierSummary.CurrentBalance >= 0 ? "positive" : "negative")">
+                        @Model.SupplierSummary.CurrentBalance.ToString("N2") ج.م
+                    </td>
+                    <td class="positive">@Model.SupplierSummary.TotalDeposits.ToString("N2") ج.م</td>
+                    <td class="negative">@Model.SupplierSummary.TotalWithdrawals.ToString("N2") ج.م</td>
+                    <td>-</td>
+                    <td>@Model.SupplierSummary.TotalTransactions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- الإجماليات -->
+    <div class="totals-section">
+        <div class="total-amount">
+            @{
+                var totalBalance = Model.InstaPaySummary.CurrentBalance + 
+                                 Model.CashLineSummary.CurrentBalance + 
+                                 Model.PhysicalCashSummary.CurrentBalance + 
+                                 Model.SupplierSummary.CurrentBalance;
+            }
+            @totalBalance.ToString("N2") ج.م
+        </div>
+        <div class="total-label">إجمالي الرصيد في النظام</div>
+        <div style="margin-top: 1rem; opacity: 0.8;">
+            إجمالي المعاملات: @Model.TotalTransactions | إجمالي الرسوم: @Model.TotalFees.ToString("N2") ج.م
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // تأثيرات بصرية بسيطة
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.summary-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.6s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 150);
+            });
+        });
+    </script>
+}
+

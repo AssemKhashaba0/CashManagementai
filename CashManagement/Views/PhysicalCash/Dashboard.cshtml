@@ -1,0 +1,150 @@
+﻿@model CashManagement.Controllers.PhysicalCashDashboardViewModel
+@{
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<div class="container-fluid">
+    <h2 class="text-center mb-4">لوحة تحكم النقدية</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- الرصيد النقدي الكلي -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي الرصيد النقدي</h5>
+                    <p class="card-text">@Model.TotalPhysicalCash.ToString("C")</p>
+                </div>
+                <div class="card-footer">
+                    <small>آخر تحديث: @Model.LastUpdated.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- إجمالي رصيد النظام -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي رصيد النظام</h5>
+                    <p class="card-text">@Model.TotalSystemBalance.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- إجمالي العمليات -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي العمليات</h5>
+                    <p class="card-text">اليوم: @Model.DailyTransactions</p>
+                    <p class="card-text">الشهر: @Model.MonthlyTransactions</p>
+                    <p class="card-text">السنة: @Model.YearlyTransactions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإيداع اليومي -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي الإيداع اليومي</h5>
+                    <p class="card-text">@Model.DailyDeposits.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- السحب اليومي -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي السحب اليومي</h5>
+                    <p class="card-text">@Model.DailyWithdrawals.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإيداع الشهري -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي الإيداع الشهري</h5>
+                    <p class="card-text">@Model.MonthlyDeposits.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- السحب الشهري -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي السحب الشهري</h5>
+                    <p class="card-text">@Model.MonthlyWithdrawals.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإيداع السنوي -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي الإيداع السنوي</h5>
+                    <p class="card-text">@Model.YearlyDeposits.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- السحب السنوي -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي السحب السنوي</h5>
+                    <p class="card-text">@Model.YearlyWithdrawals.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- العمليات المكتملة -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">العمليات المكتملة</h5>
+                    <p class="card-text">@Model.CompletedTransactions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- العمليات المجمدة -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">العمليات المجمدة</h5>
+                    <p class="card-text">@Model.FrozenTransactions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-primary"><i class="bi bi-list"></i> عرض جميع العمليات</a>
+        <a asp-action="Withdraw" class="btn btn-danger"><i class="bi bi-download"></i> مصروفات جديدة</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+}

@@ -1,0 +1,134 @@
+﻿@model IEnumerable<CashManagement.Controllers.CashLineViewModel>
+@{
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+    var amount = ViewBag.Amount;
+    var transactionType = ViewBag.TransactionType;
+}
+
+<div class="container-fluid">
+    <h2 class="text-center mb-4">البحث عن الخطوط النقدية المتاحة</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- خيار إعادة تعيين يدوي -->
+    <div class="mb-3">
+        <form asp-action="ResetLimits" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-warning">إعادة تعيين الحدود يدويًا</button>
+        </form>
+    </div>
+
+    <!-- نموذج البحث -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="SearchAvailableLines" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-md-4">
+                    <label for="amount" class="form-label">المبلغ</label>
+                    <input type="number" step="0.01" min="0" class="form-control" id="amount" name="amount" value="@(ViewBag.Amount ?? 0)" required />
+                </div>
+                <div class="col-md-4">
+                    <label for="transactionType" class="form-label">نوع المعاملة</label>
+                    <select class="form-control" id="transactionType" name="transactionType" required>
+                        <option value="@TransactionType.Withdraw" selected="@(ViewBag.TransactionType == TransactionType.Withdraw)">سحب</option>
+                        <option value="@TransactionType.Deposit" selected="@(ViewBag.TransactionType == TransactionType.Deposit)">إيداع</option>
+                    </select>
+                </div>
+                <div class="col-md-4 align-self-end">
+                    <button type="submit" class="btn btn-primary">بحث</button>
+                    <a asp-action="Index" class="btn btn-secondary">العودة إلى القائمة</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول النتائج -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>رقم الهاتف</th>
+                            <th>اسم المالك</th>
+                            <th>الرقم القومي</th>
+                            <th>الرصيد الحالي</th>
+                            <th>المتبقي من الحد اليومي للسحب</th>
+                            <th>المتبقي من الحد اليومي للإيداع</th>
+                            <th>المتبقي من الحد الشهري للسحب</th>
+                            <th>المتبقي من الحد الشهري للإيداع</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">لا توجد خطوط نقدية متاحة تلبي شروط البحث.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var cashLine in Model)
+                            {
+                                <tr>
+                                    <td>@cashLine.PhoneNumber</td>
+                                    <td>@cashLine.OwnerName</td>
+                                    <td>@cashLine.NationalId</td>
+                                    <td>@cashLine.CurrentBalance.ToString("C")</td>
+                                    <td>
+                                        @(Math.Max(0, cashLine.DailyWithdrawRemaining).ToString("C"))
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: @(Math.Min(100, Math.Max(0, cashLine.DailyWithdrawRemainingPercentage)))%" aria-valuenow="@(Math.Min(100, Math.Max(0, cashLine.DailyWithdrawRemainingPercentage)))" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @(Math.Max(0, cashLine.DailyDepositRemaining).ToString("C"))
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: @(Math.Min(100, Math.Max(0, cashLine.DailyDepositRemainingPercentage)))%" aria-valuenow="@(Math.Min(100, Math.Max(0, cashLine.DailyDepositRemainingPercentage)))" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @(Math.Max(0, cashLine.MonthlyWithdrawRemaining).ToString("C"))
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: @(Math.Min(100, Math.Max(0, cashLine.MonthlyWithdrawRemainingPercentage)))%" aria-valuenow="@(Math.Min(100, Math.Max(0, cashLine.MonthlyWithdrawRemainingPercentage)))" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @(Math.Max(0, cashLine.MonthlyDepositRemaining).ToString("C"))
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: @(Math.Min(100, Math.Max(0, cashLine.MonthlyDepositRemainingPercentage)))%" aria-valuenow="@(Math.Min(100, Math.Max(0, cashLine.MonthlyDepositRemainingPercentage)))" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@cashLine.Id" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i> التفاصيل</a>
+                                        <a asp-controller="CashTransactions" asp-action="Withdraw" asp-route-cashLineId="@cashLine.Id" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من إجراء عملية السحب؟');"><i class="bi bi-download"></i> سحب</a>
+                                        <a asp-controller="CashTransactions" asp-action="Deposit" asp-route-cashLineId="@cashLine.Id" class="btn btn-primary btn-sm" onclick="return confirm('هل أنت متأكد من إجراء عملية الإيداع؟');"><i class="bi bi-upload"></i> إيداع</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+}

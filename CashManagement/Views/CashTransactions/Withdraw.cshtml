@@ -1,0 +1,58 @@
+﻿@model CashManagement.Models.CashTransaction
+@{
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+    var cashLine = ViewBag.CashLine as CashManagement.Models.CashLine;
+}
+
+<div class="container-fluid">
+    <h2 class="text-center mb-4">إنشاء عملية سحب</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <h5>تفاصيل الخط: @cashLine.PhoneNumber</h5>
+            <p>الرصيد الحالي: @cashLine.CurrentBalance.ToString("C")</p>
+            <form asp-action="Withdraw" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="CashLineId" />
+                <input type="hidden" asp-for="TransactionType" value="Withdraw" />
+                <div class="mb-3">
+                    <label asp-for="Amount" class="form-label">المبلغ</label>
+                    <input asp-for="Amount" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="CommissionRate" class="form-label">نسبة الرسوم (%)</label>
+                    <input asp-for="CommissionRate" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="CommissionRate" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="RecipientNumber" class="form-label">رقم المستلم</label>
+                    <input asp-for="RecipientNumber" class="form-control" />
+                    <span asp-validation-for="RecipientNumber" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">الوصف</label>
+                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">تنفيذ السحب</button>
+                <a asp-action="Index" class="btn btn-secondary">رجوع</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+}

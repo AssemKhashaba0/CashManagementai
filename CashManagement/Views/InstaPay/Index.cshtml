@@ -1,0 +1,267 @@
+﻿@model IEnumerable<CashManagement.Controllers.InstaPaySummaryViewModel>
+
+@{
+    ViewData["Title"] = "قائمة حسابات إنستا باي";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<style>
+    /* تعريف المتغيرات للألوان الجديدة */
+    :root {
+        --bg: #FDFDFD; /* عاجي فاتح */
+        --primary: #1D4ED8; /* أزرق نيلي */
+        --text: #111827; /* أسود ناعم */
+        --light-gray: #F3F4F6; /* رمادي فاتح جداً للترويسة/شريط جانبي */
+        --border-color: rgba(17, 24, 39, 0.1); /* أسود ناعم شفاف للحدود */
+        --shadow-color: rgba(0, 0, 0, 0.05); /* ظل خفيف */
+        --success-text: #22C55E; /* أخضر للحالة الناجحة */
+        --warning-text: #FACC15; /* أصفر للحالة التحذيرية */
+        --info-text: #3ABFF8; /* أزرق فاتح للمعلومات */
+        --danger-text: #EF4444; /* أحمر للخطر */
+    }
+
+    /* تطبيق الخط واتجاه النص */
+    body {
+        font-family: 'Inter', 'Cairo', sans-serif;
+        direction: rtl;
+        background-color: var(--bg);
+        color: var(--text);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text);
+        text-align: right;
+    }
+
+    hr {
+        border-top: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+    }
+
+    /* أنماط الحاوية والبطاقات */
+    .container-fluid {
+        padding: 1.5rem;
+    }
+
+    .card {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color);
+        margin-bottom: 1.5rem; /* مسافة بين البطاقات */
+    }
+
+    .card-header {
+        background-color: var(--light-gray);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-footer {
+        background-color: var(--light-gray);
+        border-top: 1px solid var(--border-color);
+        padding: 1rem 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end; /* محاذاة الأزرار لليمين */
+    }
+
+    /* أنماط أزرار النموذج */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+        display: inline-flex; /* لجعل الأيقونات والنص بجانب بعضهما البعض */
+        align-items: center; /* لمحاذاة العناصر عموديا في الوسط */
+    }
+
+        .btn i {
+            margin-left: 0.5rem; /* مسافة بين الأيقونة والنص */
+            margin-right: 0; /* إلغاء الهامش الأيسر الافتراضي لليمين */
+        }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: color-mix(in srgb, var(--primary) 90%, black);
+            border-color: color-mix(in srgb, var(--primary) 90%, black);
+        }
+
+    .btn-info {
+        background-color: var(--info-text);
+        border-color: var(--info-text);
+        color: white;
+    }
+
+        .btn-info:hover {
+            background-color: color-mix(in srgb, var(--info-text) 90%, black);
+            border-color: color-mix(in srgb, var(--info-text) 90%, black);
+        }
+
+    .btn-success {
+        background-color: var(--success-text);
+        border-color: var(--success-text);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: color-mix(in srgb, var(--success-text) 90%, black);
+            border-color: color-mix(in srgb, var(--success-text) 90%, black);
+        }
+
+    .btn-warning {
+        background-color: var(--warning-text);
+        border-color: var(--warning-text);
+        color: var(--text); /* نص داكن للزر الذهبي */
+    }
+
+        .btn-warning:hover {
+            background-color: color-mix(in srgb, var(--warning-text) 90%, black);
+            border-color: color-mix(in srgb, var(--warning-text) 90%, black);
+        }
+
+    /* أنماط الشارات (Badges) */
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+        font-size: 0.85rem; /* حجم أصغر قليلاً للشارة */
+    }
+
+        .badge.bg-success {
+            background-color: var(--success-text) !important;
+            color: white;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--danger-text) !important;
+            color: white;
+        }
+        /* اللون الافتراضي للحالة إذا لم تكن نشطة/غير نشطة */
+        .badge.bg-secondary-status { /* Custom class for generic status badge */
+            background-color: var(--light-gray) !important;
+            color: var(--text);
+        }
+
+
+    /* أنماط الرسائل التنبيهية */
+    .alert-success {
+        background-color: #D1FAE5;
+        color: #065F46;
+        border-color: #A7F3D0;
+    }
+
+    .alert-info {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        border-color: #93C5FD;
+    }
+
+    /* Style for the text in card body */
+    .card-text strong {
+        color: var(--primary); /* highlight the labels */
+        margin-left: 0.5rem; /* space after label */
+    }
+
+    .balance-amount {
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid">
+    <h1 class="mb-4">قائمة حسابات إنستا باي</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <p class="mb-4 text-start">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i> إضافة حساب جديد
+        </a>
+    </p>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var account in Model)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <span>حساب <strong class="text-primary">@account.PhoneNumber</strong></span>
+                            <span class="badge @(account.Status == CashManagement.Models.AccountStatus.Active ? "bg-success" : account.Status == CashManagement.Models.AccountStatus.Frozen ? "bg-danger" : "bg-secondary-status")">
+                                @(account.Status == CashManagement.Models.AccountStatus.Active ? "نشط" : account.Status == CashManagement.Models.AccountStatus.Frozen ? "غير نشط" : "أخرى")
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text mb-2">
+                                <strong>رقم الحساب البنكي:</strong> @account.BankAccountNumber
+                            </p>
+                            <p class="card-text mb-3">
+                                <strong>الرصيد الحالي:</strong>
+                                <span class="balance-amount @(account.CurrentBalance >= 0 ? "text-success" : "text-danger")">
+                                    @account.CurrentBalance.ToString("C")
+                                </span>
+                            </p>
+
+                            <hr class="my-3">
+
+                            <p class="card-text mb-2">
+                                <strong>إجمالي الإيداع:</strong> @account.TotalDeposits.ToString("C")
+                            </p>
+                            <p class="card-text mb-2">
+                                <strong>إجمالي السحب:</strong> @account.TotalWithdrawals.ToString("C")
+                            </p>
+                            <p class="card-text mb-0">
+                                <strong>عدد المعاملات:</strong> @account.TotalTransactions
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a asp-action="Details" asp-route-id="@account.Id" class="btn btn-info btn-sm">
+                                <i class="bi bi-info-circle me-1"></i> التفاصيل
+                            </a>
+                            <a asp-action="Transaction" asp-route-id="@account.Id" asp-route-transactionType="Deposit" class="btn btn-success btn-sm">
+                                <i class="bi bi-upload me-1"></i> إيداع
+                            </a>
+                            <a asp-action="Transaction" asp-route-id="@account.Id" asp-route-transactionType="Withdraw" class="btn btn-warning btn-sm">
+                                <i class="bi bi-download me-1"></i> سحب
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center" role="alert">
+            لا توجد حسابات إنستا باي متاحة لعرضها.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+}

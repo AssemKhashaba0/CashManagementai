@@ -1,0 +1,485 @@
+﻿@model CashManagement.Controllers.UpdateUserViewModel
+@{
+    ViewData["Title"] = "تحديث المستخدم";
+    Layout = "/Views/Shared/_LayoutDashbord.cshtml";
+}
+
+<style>
+    /* Custom CSS for the specified color palette and enhanced design - Light Theme */
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+    @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --background-color: #FDFDFD; /* Light Ivory */
+        --primary-color: #1D4ED8;   /* Indigo Blue */
+        --text-color: #111827;      /* Soft Black */
+        --header-sidebar-bg: #F3F4F6; /* Very Light Gray - Used for card background */
+        --secondary-color: #FACC15;  /* Soft Gold (for accents/highlights) */
+        --error-color: #F87171;     /* Red for errors */
+        --success-color: #10B981;   /* Green for success */
+        --warning-color: #F59E0B;   /* Orange for warnings */
+        --info-color: #0EA5E9;      /* Light Blue for info/details */
+
+        /* Derived colors for better contrast/depth in light theme */
+        --card-bg: var(--header-sidebar-bg); /* Use very light gray for card backgrounds */
+        --input-bg: #EBECED; /* Slightly darker light ivory for input fields */
+        --border-color: #D1D5DB; /* Light gray for subtle borders */
+        --button-text-light: #FFFFFF; /* White text for dark buttons */
+        --button-text-dark: #111827; /* Dark text for light buttons */
+        --focus-ring-color: rgba(29, 78, 216, 0.25); /* Primary color focus ring */
+        --muted-text-color: #6B7280; /* Darker gray for muted text like placeholders */
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: 'Cairo', sans-serif;
+        font-weight: 400;
+        direction: rtl; /* Ensure overall RTL for Arabic content */
+        text-align: right; /* Default text alignment for Arabic */
+    }
+
+    .update-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3.5rem; /* More space below header */
+        padding-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .page-title {
+        font-size: 2.8rem; /* Larger title */
+        font-weight: 800; /* Bolder title */
+        color: var(--primary-color); /* Primary color for title */
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+    }
+
+    .title-icon {
+        color: var(--secondary-color); /* Secondary color for icon */
+        font-size: 2.5rem; /* Larger icon */
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px; /* Underline for header */
+        height: 4px;
+        background: var(--secondary-color); /* Secondary color for underline */
+        border-radius: 2px;
+    }
+
+    .update-form {
+        background: var(--card-bg); /* Very Light Gray */
+        border-radius: 16px; /* Larger border-radius */
+        padding: 3.5rem; /* More padding */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Lighter, softer shadow */
+        border: 1px solid var(--border-color); /* Subtle border */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-section {
+        margin-bottom: 3rem; /* More space between sections */
+    }
+
+    .section-title {
+        font-size: 1.5rem; /* Larger section titles */
+        font-weight: 700; /* Bolder section titles */
+        color: var(--primary-color); /* Primary color for section titles */
+        margin-bottom: 1.8rem; /* More space below title */
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-color); /* Thicker border */
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .section-icon {
+        color: var(--secondary-color); /* Secondary color for section icons */
+        font-size: 1.4rem; /* Larger section icons */
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+        gap: 2.5rem; /* More space between columns */
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 0; /* Managed by grid gap */
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color); /* Soft Black */
+        margin-bottom: 0.8rem; /* More space below label */
+        font-size: 1.05rem; /* Slightly larger label */
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background-color: var(--input-bg); /* Light ivory derived color */
+        border: 1px solid var(--border-color); /* Lighter border */
+        border-radius: 10px; /* Consistent border-radius */
+        color: var(--text-color); /* Soft Black */
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        outline: none;
+        direction: rtl; /* Ensure input direction is RTL */
+        text-align: right; /* Align text to right in inputs */
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color); /* Focus border using primary color */
+        background-color: var(--input-bg); /* Keep background same on focus */
+        box-shadow: 0 0 0 4px var(--focus-ring-color); /* Primary color shadow on focus */
+    }
+
+    .form-control::placeholder {
+        color: var(--muted-text-color); /* Darker gray for placeholder */
+        opacity: 0.8; /* Make placeholder a bit lighter */
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background-color: var(--input-bg); /* Light ivory derived color */
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color); /* Add border for consistency */
+    }
+
+    .checkbox-wrapper:hover {
+        background-color: #E2E3E4; /* Slightly darker input background on hover */
+    }
+
+    .form-check-input {
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: transparent;
+        border: 2px solid var(--border-color);
+        border-radius: 6px; /* Slightly more rounded checkbox */
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0; /* Prevent checkbox from shrinking */
+        margin-left: 0.5rem; /* Adjust margin for RTL */
+        appearance: none; /* Hide default checkbox */
+        position: relative;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color); /* Primary color when checked */
+        border-color: var(--primary-color);
+    }
+
+    .form-check-input:checked::before {
+        content: '\2713'; /* Checkmark symbol */
+        font-size: 1.2rem;
+        color: var(--button-text-light); /* White checkmark */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .form-check-label {
+        color: var(--text-color); /* Soft Black */
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 1rem;
+        user-select: none; /* Prevent text selection on label click */
+    }
+
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); /* Darker arrow for light theme */
+        background-position: left 1rem center; /* Position arrow to the left for RTL */
+        background-repeat: no-repeat;
+        background-size: 1rem;
+        padding-left: 3rem; /* Space for the arrow */
+    }
+
+    .text-danger {
+        color: var(--error-color);
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-top: 0.6rem; /* More space */
+        display: block;
+        text-align: right;
+    }
+
+    .validation-summary {
+        background-color: rgba(248, 113, 113, 0.1); /* Lighter error background */
+        border: 1px solid var(--error-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2.5rem; /* More space */
+        color: var(--error-color); /* Error color for text */
+        font-weight: 500;
+        list-style-type: none; /* Remove bullet points */
+        padding-right: 2rem; /* Indent list items */
+    }
+    .validation-summary ul {
+        padding: 0;
+        margin: 0;
+    }
+    .validation-summary li {
+        margin-bottom: 0.5rem;
+    }
+    .validation-summary li:last-child {
+        margin-bottom: 0;
+    }
+
+
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 3.5rem; /* More space above buttons */
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 1rem 2.5rem;
+        border: none;
+        border-radius: 10px; /* Consistent border-radius */
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 170px; /* Slightly wider buttons */
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Lighter shadow for buttons */
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color); /* Indigo Blue */
+        color: var(--button-text-light); /* White text */
+    }
+
+    .btn-primary:hover {
+        background-color: #17329E; /* Darker primary on hover */
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3); /* Stronger shadow on hover */
+    }
+
+    .btn-secondary {
+        background-color: var(--border-color); /* Light gray for secondary action */
+        color: var(--text-color); /* Soft Black text */
+    }
+
+    .btn-secondary:hover {
+        background-color: #B0B5BB; /* Darker border color on hover */
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(209, 213, 219, 0.3); /* Stronger shadow on hover */
+    }
+
+    .btn i {
+        font-size: 1.1rem;
+        order: 1; /* Place icon after text for RTL */
+    }
+    .btn span { /* For text within the button */
+        order: 2;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .update-container {
+            padding: 1rem;
+        }
+
+        .update-form {
+            padding: 2rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* Adjust gap for single column */
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+        }
+        .title-icon {
+            font-size: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .section-icon {
+            font-size: 1.2rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            min-width: unset; /* Remove min-width on small screens */
+        }
+    }
+
+    /* Clean animations */
+    .update-form {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="update-container" dir="rtl">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-user-edit title-icon"></i>
+            تحديث المستخدم
+        </h1>
+    </div>
+
+    <div class="update-form">
+        <form asp-action="Update" method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+            
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user section-icon"></i>
+                    البيانات الشخصية
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="FullName" class="form-label">الاسم الكامل</label>
+                        <input asp-for="FullName" class="form-control" placeholder="أدخل الاسم الكامل" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="UserName" class="form-label">اسم المستخدم</label>
+                        <input asp-for="UserName" class="form-control" placeholder="أدخل اسم المستخدم" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">البريد الإلكتروني</label>
+                    <input asp-for="Email" class="form-control" type="email" placeholder="أدخل البريد الإلكتروني" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-shield-alt section-icon"></i>
+                    الصلاحيات والأدوار
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="Role" class="form-label">الدور الوظيفي</label>
+                        <select asp-for="Role" class="form-control" asp-items="@(new SelectList(Model.AvailableRoles))">
+                            <option value="">اختر الدور</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="IsActive" class="form-label">حالة الحساب</label>
+                        <div class="checkbox-wrapper">
+                            <input asp-for="IsActive" type="checkbox" class="form-check-input" id="isActiveCheck" />
+                            <label for="isActiveCheck" class="form-check-label">الحساب نشط</label>
+                        </div>
+                        <span asp-validation-for="IsActive" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    حفظ التغييرات
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    العودة للقائمة
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhance input field interaction (focus/blur)
+            const inputs = document.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.borderColor = 'var(--primary-color)'; /* Use primary color on focus */
+                });
+                
+                input.addEventListener('blur', function() {
+                    // Only reset border if value is empty, otherwise keep primary color if valid
+                    if (!this.value) {
+                        this.style.borderColor = 'var(--border-color)'; /* Revert to subtle border */
+                    }
+                });
+            });
+
+            // Enhance custom checkbox interaction
+            const checkboxWrapper = document.querySelector('.checkbox-wrapper');
+            if (checkboxWrapper) {
+                checkboxWrapper.addEventListener('click', function(e) {
+                    const checkbox = this.querySelector('.form-check-input');
+                    // Toggle checkbox only if the click wasn't directly on the checkbox itself
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change')); // Trigger change event for validation
+                    }
+                });
+            }
+        });
+    </script>
+}
